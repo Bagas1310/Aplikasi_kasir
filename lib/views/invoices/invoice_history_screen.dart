@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'dart:io';
 import '../../models/transaction.dart';
 import '../../services/database/database_helper.dart';
 
@@ -57,13 +58,24 @@ class _InvoiceHistoryScreenState extends State<InvoiceHistoryScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(txn.invoiceNumber, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(txn.invoiceNumber, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                      const SizedBox(height: 4),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(color: Colors.green.shade100, borderRadius: BorderRadius.circular(6)),
+                        child: const Text('Membeli', style: TextStyle(color: Color(0xFF15803D), fontSize: 12, fontWeight: FontWeight.bold)),
+                      ),
+                    ],
+                  ),
                   IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(ctx)),
                 ],
               ),
               if (txn.tableNumber != null)
                 Padding(
-                  padding: const EdgeInsets.only(bottom: 4),
+                  padding: const EdgeInsets.only(top: 6, bottom: 4),
                   child: Text(
                     'Nomor Meja: Meja ${txn.tableNumber!.toString().padLeft(2, '0')}',
                     style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF15803D)),
@@ -73,6 +85,18 @@ class _InvoiceHistoryScreenState extends State<InvoiceHistoryScreen> {
                 'Kasir: ${txn.userName} • ${DateFormat('dd MMM yyyy, HH:mm').format(txn.createdAt)}',
                 style: const TextStyle(color: Colors.grey, fontSize: 13),
               ),
+              if (txn.paymentProof != null && File(txn.paymentProof!).existsSync()) ...[
+                const SizedBox(height: 10),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.file(
+                    File(txn.paymentProof!),
+                    height: 120,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ],
               const Divider(height: 24),
               ConstrainedBox(
                 constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.35),
@@ -219,7 +243,17 @@ class _InvoiceHistoryScreenState extends State<InvoiceHistoryScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(t.invoiceNumber, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                        Row(
+                          children: [
+                            Text(t.invoiceNumber, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                              decoration: BoxDecoration(color: Colors.green.shade50, borderRadius: BorderRadius.circular(4)),
+                              child: const Text('Membeli', style: TextStyle(color: Color(0xFF15803D), fontSize: 10, fontWeight: FontWeight.bold)),
+                            ),
+                          ],
+                        ),
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                           decoration: BoxDecoration(

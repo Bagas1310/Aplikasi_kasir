@@ -14,6 +14,7 @@ class TransactionModel {
   final double paidAmount;
   final double changeAmount;
   final int? tableNumber;
+  final String? paymentProof;
   final DateTime createdAt;
   final List<TransactionItemModel> items;
 
@@ -31,6 +32,7 @@ class TransactionModel {
     required this.paidAmount,
     required this.changeAmount,
     this.tableNumber,
+    this.paymentProof,
     DateTime? createdAt,
     this.items = const [],
   }) : createdAt = createdAt ?? DateTime.now();
@@ -49,6 +51,7 @@ class TransactionModel {
     'paid_amount': paidAmount,
     'change_amount': changeAmount,
     'table_number': tableNumber,
+    if (paymentProof != null) 'payment_proof': paymentProof,
     'created_at': createdAt.toIso8601String(),
   };
 
@@ -69,6 +72,7 @@ class TransactionModel {
     paidAmount: (map['paid_amount'] as num).toDouble(),
     changeAmount: (map['change_amount'] as num).toDouble(),
     tableNumber: map['table_number'] as int?,
+    paymentProof: map['payment_proof'] as String?,
     createdAt: DateTime.tryParse(map['created_at'] as String? ?? '') ?? DateTime.now(),
     items: items,
   );
@@ -87,6 +91,7 @@ class TransactionModel {
     double? paidAmount,
     double? changeAmount,
     int? tableNumber,
+    String? paymentProof,
     DateTime? createdAt,
     List<TransactionItemModel>? items,
   }) => TransactionModel(
@@ -103,6 +108,7 @@ class TransactionModel {
     paidAmount: paidAmount ?? this.paidAmount,
     changeAmount: changeAmount ?? this.changeAmount,
     tableNumber: tableNumber ?? this.tableNumber,
+    paymentProof: paymentProof ?? this.paymentProof,
     createdAt: createdAt ?? this.createdAt,
     items: items ?? this.items,
   );

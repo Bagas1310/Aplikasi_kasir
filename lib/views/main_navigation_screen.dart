@@ -8,6 +8,7 @@ import 'invoices/invoice_history_screen.dart';
 import 'reports/report_screen.dart';
 import 'shift/shift_dialog.dart';
 import 'staff/staff_dialog.dart';
+import 'settings/owner_password_dialog.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
@@ -46,6 +47,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
               userId: user.id!,
               userName: user.name,
               shiftId: shift?.id,
+              selectedTable: _tableNumber,
               onTableSelected: (number) => setState(() => _tableNumber = number),
             ),
             PosScreen(
@@ -151,6 +153,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             onSelected: (val) {
               if (val == 'staff') {
                 StaffDialog.show(context);
+              } else if (val == 'password') {
+                OwnerPasswordDialog.show(context);
               } else if (val == 'logout') {
                 auth.logout();
               }
@@ -167,6 +171,16 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                     ],
                   ),
                 ),
+              const PopupMenuItem(
+                value: 'password',
+                child: Row(
+                  children: [
+                    Icon(Icons.lock_outline, size: 20),
+                    SizedBox(width: 10),
+                    Text('Ganti Password'),
+                  ],
+                ),
+              ),
               const PopupMenuItem(
                 value: 'logout',
                 child: Row(

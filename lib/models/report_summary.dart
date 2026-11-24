@@ -21,6 +21,8 @@ class BestSellerModel {
 
 class SalesSummaryModel {
   final double totalRevenue;
+  final double cashRevenue;
+  final double qrisRevenue;
   final double totalProfit;
   final int totalTransactions;
   final int totalItemsSold;
@@ -28,6 +30,8 @@ class SalesSummaryModel {
 
   SalesSummaryModel({
     required this.totalRevenue,
+    this.cashRevenue = 0.0,
+    this.qrisRevenue = 0.0,
     required this.totalProfit,
     required this.totalTransactions,
     required this.totalItemsSold,
@@ -36,6 +40,8 @@ class SalesSummaryModel {
 
   factory SalesSummaryModel.empty() => SalesSummaryModel(
     totalRevenue: 0,
+    cashRevenue: 0,
+    qrisRevenue: 0,
     totalProfit: 0,
     totalTransactions: 0,
     totalItemsSold: 0,

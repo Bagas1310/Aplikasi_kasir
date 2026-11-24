@@ -148,7 +148,7 @@ class _TableCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final primaryColor = Colors.green.shade600;
+    final emerald = const Color(0xFF15803D);
     final availableColor = Colors.green.shade600;
     final occupiedColor = Colors.red.shade400;
 
@@ -163,39 +163,40 @@ class _TableCard extends StatelessWidget {
         child: Ink(
           decoration: BoxDecoration(
             color: isAvailable
-                ? (selected ? Colors.green.shade600 : Colors.green.shade50)
+                ? (selected ? emerald : Colors.green.shade50)
                 : Colors.red.shade50,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: isAvailable
-                  ? (selected ? Colors.green.shade800 : Colors.green.shade400)
+                  ? (selected ? emerald : Colors.green.shade400)
                   : occupiedColor,
               width: 1.5,
             ),
             boxShadow: [
               BoxShadow(
-                color: (isAvailable ? primaryColor : occupiedColor).withValues(alpha: 0.08),
-                blurRadius: 6,
-                offset: const Offset(0, 3),
+                color: (isAvailable ? emerald : occupiedColor).withValues(alpha: 0.2),
+                blurRadius: 8,
+                offset: const Offset(0, 4),
               ),
             ],
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Icon(
                 isAvailable ? Icons.table_restaurant : Icons.person,
                 color: isAvailable
                     ? (selected ? Colors.white : availableColor)
                     : occupiedColor,
-                size: 32,
+                size: 34,
               ),
               const SizedBox(height: 6),
               Text(
                 'Meja ${number.toString().padLeft(2, '0')}',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  fontSize: 14,
+                  fontSize: 15,
                   color: isAvailable
                       ? (selected ? Colors.white : Colors.black87)
                       : Colors.red.shade900,

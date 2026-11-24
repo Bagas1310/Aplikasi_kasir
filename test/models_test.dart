@@ -77,11 +77,13 @@ void main() {
       paidAmount: 50000,
       changeAmount: 5000,
       tableNumber: 5,
+      paymentProof: '/path/to/proof.jpg',
     );
     final map = txn.toMap();
     final from = TransactionModel.fromMap(map);
     expect(from.invoiceNumber, 'INV-20261120-001');
     expect(from.total, 45000);
     expect(from.tableNumber, 5);
+    expect(from.paymentProof, '/path/to/proof.jpg');
   });
 }

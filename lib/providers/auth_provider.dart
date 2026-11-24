@@ -140,6 +140,25 @@ class AuthProvider extends ChangeNotifier {
     await loadStaff();
   }
 
+  Future<bool> changePassword({
+    required String oldPassword,
+    required String newPassword,
+  }) async {
+    if (_currentUser == null) return false;
+    if (_currentUser!.password != oldPassword) return false;
+    if (newPassword.isEmpty || newPassword.length < 6) return false;
+    final id = _currentUser!.id;
+    await _db.updateUserPassword(id!, newPassword);
+    _currentUser = _currentUser!.copyWith(password: newPassword);
+    notifyListeners();
+    return true;
+  }
+
+  Future<bool> changeOwnerPassword({
+    required String oldPassword,
+    required String newPassword,
+  }) => changePassword(oldPassword: oldPassword, newPassword: newPassword);
+
   Future<void> logout() async {
     if (_currentShift != null) {
       await _db.closeShift(_currentShift!.id!);

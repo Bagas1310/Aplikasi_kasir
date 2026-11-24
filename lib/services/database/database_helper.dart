@@ -25,7 +25,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 4,
+      version: 5,
       onConfigure: (db) async {
         await db.execute('PRAGMA foreign_keys = ON');
       },
@@ -69,6 +69,11 @@ class DatabaseHelper {
       for (int i = 13; i <= 20; i++) {
         await db.insert('tables', {'number': i, 'status': 'available'});
       }
+    }
+    if (oldVersion < 5) {
+      try {
+        await db.execute('ALTER TABLE transactions ADD COLUMN payment_proof TEXT');
+      } catch (_) {}
     }
   }
 
@@ -128,6 +133,7 @@ class DatabaseHelper {
         paid_amount REAL NOT NULL,
         change_amount REAL NOT NULL,
         table_number INTEGER,
+        payment_proof TEXT,
         created_at TEXT NOT NULL
       )
     ''');
@@ -481,7 +487,9 @@ class DatabaseHelper {
     final summaryRes = await db.rawQuery('''
       SELECT 
         COUNT(id) as total_tx,
-        COALESCE(SUM(total), 0) as total_revenue
+        COALESCE(SUM(total), 0) as total_revenue,
+        COALESCE(SUM(CASE WHEN LOWER(payment_method) LIKE '%tunai%' OR LOWER(payment_method) LIKE '%cash%' THEN total ELSE 0 END), 0) as cash_revenue,
+        COALESCE(SUM(CASE WHEN LOWER(payment_method) LIKE '%qris%' OR LOWER(payment_method) LIKE '%non%' THEN total ELSE 0 END), 0) as qris_revenue
       FROM transactions
       WHERE created_at BETWEEN ? AND ?
     ''', [startStr, endStr]);
@@ -510,6 +518,8 @@ class DatabaseHelper {
     ''', [startStr, endStr]);
 
     final totalRevenue = (summaryRes.first['total_revenue'] as num? ?? 0).toDouble();
+    final cashRevenue = (summaryRes.first['cash_revenue'] as num? ?? 0).toDouble();
+    final qrisRevenue = (summaryRes.first['qris_revenue'] as num? ?? 0).toDouble();
     final totalTransactions = (summaryRes.first['total_tx'] as num? ?? 0).toInt();
     final totalProfit = (profitRes.first['total_profit'] as num? ?? 0).toDouble();
     final totalItemsSold = (profitRes.first['total_qty'] as num? ?? 0).toInt();
@@ -520,6 +530,8 @@ class DatabaseHelper {
 
     return SalesSummaryModel(
       totalRevenue: totalRevenue,
+      cashRevenue: cashRevenue,
+      qrisRevenue: qrisRevenue,
       totalProfit: totalProfit,
       totalTransactions: totalTransactions,
       totalItemsSold: totalItemsSold,
@@ -559,6 +571,16 @@ class DatabaseHelper {
   Future<void> freeTable(int number) => setTableStatus(number, 'available');
 
   Future<void> occupyTable(int number) => setTableStatus(number, 'occupied');
+
+  Future<void> updateUserPassword(int id, String password) async {
+    final db = await database;
+    await db.update(
+      'users',
+      {'password': password},
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
 
   Future<void> close() async {
     final db = _database;

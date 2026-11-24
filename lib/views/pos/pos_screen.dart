@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../models/product.dart';
 import '../../models/transaction.dart';
 import '../../models/transaction_item.dart';
@@ -215,7 +216,9 @@ class _PosScreenState extends State<PosScreen> {
     double discount = 0.0;
     double tax = 0.0;
     String method = 'Tunai';
+    String? proofPath;
     final cashController = TextEditingController(text: _cartTotal.toStringAsFixed(0));
+    final picker = ImagePicker();
 
     showModalBottomSheet(
       context: context,
@@ -304,6 +307,49 @@ class _PosScreenState extends State<PosScreen> {
                         ),
                       ],
                     ),
+                  ] else ...[
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade50,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: Colors.grey.shade300),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text('Bukti Pembayaran (Opsional)', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+                              if (proofPath != null)
+                                TextButton(
+                                  onPressed: () => setModalState(() => proofPath = null),
+                                  child: const Text('Hapus', style: TextStyle(color: Colors.red, fontSize: 12)),
+                                ),
+                            ],
+                          ),
+                          const SizedBox(height: 6),
+                          OutlinedButton.icon(
+                            style: OutlinedButton.styleFrom(
+                              minimumSize: const Size.fromHeight(40),
+                              side: BorderSide(color: proofPath != null ? const Color(0xFF15803D) : Colors.grey.shade400),
+                            ),
+                            onPressed: () async {
+                              final img = await picker.pickImage(source: ImageSource.gallery, imageQuality: 70);
+                              if (img != null) {
+                                setModalState(() => proofPath = img.path);
+                              }
+                            },
+                            icon: Icon(proofPath != null ? Icons.check_circle : Icons.upload_file, color: proofPath != null ? const Color(0xFF15803D) : null, size: 18),
+                            label: Text(
+                              proofPath != null ? 'Bukti Terlampir' : 'Unggah Bukti Transfer / QRIS',
+                              style: TextStyle(color: proofPath != null ? const Color(0xFF15803D) : null, fontSize: 13),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ],
                   const SizedBox(height: 20),
                   SizedBox(
@@ -321,6 +367,7 @@ class _PosScreenState extends State<PosScreen> {
                                 changeAmount: changeVal < 0 ? 0 : changeVal,
                                 discount: discount,
                                 tax: tax,
+                                paymentProof: proofPath,
                               );
                             },
                       child: const Text('Selesaikan Transaksi', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
@@ -342,6 +389,7 @@ class _PosScreenState extends State<PosScreen> {
     required double changeAmount,
     required double discount,
     required double tax,
+    String? paymentProof,
   }) async {
     final now = DateTime.now();
     final invoiceNumber = 'INV-${now.millisecondsSinceEpoch.toString().substring(4)}';
@@ -359,6 +407,7 @@ class _PosScreenState extends State<PosScreen> {
       paidAmount: paidAmount,
       changeAmount: changeAmount,
       tableNumber: widget.tableNumber,
+      paymentProof: paymentProof,
       createdAt: now,
       items: _cart.values.toList(),
     );
@@ -404,6 +453,20 @@ class _PosScreenState extends State<PosScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Center(child: Text(txn.invoiceNumber, style: const TextStyle(fontWeight: FontWeight.bold))),
+                Center(
+                  child: Container(
+                    margin: const EdgeInsets.only(top: 4, bottom: 2),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: Colors.green.shade100,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Text(
+                      'Membeli',
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFF15803D)),
+                    ),
+                  ),
+                ),
                 if (txn.tableNumber != null)
                   Center(
                     child: Container(
@@ -425,6 +488,20 @@ class _PosScreenState extends State<PosScreen> {
                     style: const TextStyle(fontSize: 12, color: Colors.grey),
                   ),
                 ),
+                if (txn.paymentProof != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Center(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.check_circle_outline, size: 14, color: Colors.green.shade700),
+                          const SizedBox(width: 4),
+                          Text('Bukti Non-Tunai Terlampir', style: TextStyle(fontSize: 11, color: Colors.green.shade800, fontWeight: FontWeight.w600)),
+                        ],
+                      ),
+                    ),
+                  ),
                 const Divider(),
                 ...txn.items.map((i) => Padding(
                       padding: const EdgeInsets.symmetric(vertical: 2),
